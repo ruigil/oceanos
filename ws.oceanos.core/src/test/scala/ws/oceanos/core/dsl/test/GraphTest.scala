@@ -32,8 +32,7 @@ import ws.oceanos.core.graph.{DiEdge, Graph}
 
 @RunWith(classOf[JUnitRunner])
 class GraphTest extends FlatSpec {
-  import ws.oceanos.core.dsl._
-  
+
   class TestGraph(override val nodes: Set[TestNode] = Set.empty[TestNode],
                   override val edges: List[TestEdge] = List.empty[TestEdge])
     extends Graph[TestNode,TestEdge] {
