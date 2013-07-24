@@ -17,9 +17,7 @@ package ws.oceanos.core.graph
 
 import ws.oceanos.core.dsl._
 
-class FlowGraph extends DiGraph[Flow,FlowEdge] {
-
-  type ConcreteGraph = FlowGraph
+class FlowGraph extends DiGraph[Flow,FlowEdge,FlowGraph] {
 
   def in: Set[Component] =
     for {

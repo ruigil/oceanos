@@ -17,9 +17,7 @@ package ws.oceanos.core.graph
 
 import ws.oceanos.core.dsl._
 
-class PTGraph extends DiGraph[PT,PTEdge] {
-
-  type ConcreteGraph = PTGraph
+class PTGraph extends DiGraph[PT,PTEdge,PTGraph] {
 
   def copy(ns: Set[PT], es: List[PTEdge]) = new PTGraph {
     override val nodes = ns

@@ -25,7 +25,7 @@ class GraphTest extends FlatSpec {
 
   class TestGraph(override val nodes: Set[TestNode] = Set.empty[TestNode],
                   override val edges: List[TestEdge] = List.empty[TestEdge])
-    extends Graph[TestNode,TestEdge] {
+    extends Graph[TestNode,TestEdge,TestGraph] {
 
     type ConcreteGraph = TestGraph
     def copy(nodes: Set[TestNode], edges: List[TestEdge]) = new TestGraph(nodes,edges)
