@@ -1,5 +1,5 @@
 /*
- * Copyright 2001-2009 Artima, Inc.
+ * Copyright 2013 Rui Gil.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +15,6 @@
  */
 package ws.oceanos.core.dsl.test
 
-/*
-ScalaTest facilitates different styles of testing by providing traits you can mix
-together to get the behavior and syntax you prefer.  A few examples are
-included here.  For more information, visit:
-
-http://www.scalatest.org/
-
-One way to use ScalaTest is to help make JUnit or TestNG tests more
-clear and concise. Here's an example:
-*/
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner

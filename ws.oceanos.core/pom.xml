@@ -170,13 +170,4 @@
 		</dependency>
 	</dependencies>
 
-<!--
-    <repositories>
-        <repository>
-            <id>spray</id>
-            <name>Spray</name>
-            <url>http://nightlies.spray.io/</url>
-        </repository>
-    </repositories>
--->
 </project>
