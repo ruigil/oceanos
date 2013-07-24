@@ -38,7 +38,7 @@ trait Component extends Flow  {
     else throw new Exception("Service not Found")
   }
 
-  def nop: Component = n("nop")
+  def nop(id: Int = 0): Component = n("nop",id)
 
   def map(f: Any => Any): Component = new Transform(f)
 

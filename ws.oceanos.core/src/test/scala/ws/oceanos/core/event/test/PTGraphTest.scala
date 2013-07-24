@@ -13,8 +13,7 @@ class PTGraphTest extends FlatSpec with ShouldMatchers with FlowDSL {
   import ws.oceanos.core.dsl._
   
   "A PTGraph" should "have at minimum of one place and one transition when created" in {
-    val f = nop
-    val net = PTGraph(FlowGraph(f))
+    val net = PTGraph(FlowGraph(nop()))
     assert(net.places.size === 1)
     assert(net.transitions.size === 1)
     assert(net.edges.size === 1)
@@ -22,8 +21,7 @@ class PTGraphTest extends FlatSpec with ShouldMatchers with FlowDSL {
   }
 
   it should "have an initial marking" in {
-    val f = nop
-    val net = PTGraph(FlowGraph(f))
+    val net = PTGraph(FlowGraph(nop()))
     assert(net.places.size === 1)
     assert(net.transitions.size === 1)
     assert(net.edges.size === 1)
@@ -33,7 +31,7 @@ class PTGraphTest extends FlatSpec with ShouldMatchers with FlowDSL {
   }
 
   it should "allow the creation of pipelines" in {
-    val flow = nop~>nop~>nop
+    val flow = nop(0)~>nop(1)~>nop(2)
     val net = PTGraph(FlowGraph(flow))
     assert(net.places.size === 3)
     assert(net.transitions.size === 3)
@@ -41,7 +39,7 @@ class PTGraphTest extends FlatSpec with ShouldMatchers with FlowDSL {
   }
 
   it should "allow the creation of conditional outputs" in {
-    val flow = nop~>nop~>filter(_ == true)~>nop
+    val flow = nop(0)~>nop(1)~>filter(_ == true)~>nop(2)
     val net = PTGraph(FlowGraph(flow))
     assert(net.places.size === 3)
     assert(net.transitions.size === 3)
@@ -50,7 +48,7 @@ class PTGraphTest extends FlatSpec with ShouldMatchers with FlowDSL {
   }
 
   it should "allow the creation of transforms" in {
-    val flow = nop~>map(s => s)~>nop
+    val flow = nop(0)~>map(s => s)~>nop(1)
     val net = PTGraph(FlowGraph(flow))
     assert(net.places.size === 3)
     assert(net.transitions.size === 3)
@@ -58,12 +56,8 @@ class PTGraphTest extends FlatSpec with ShouldMatchers with FlowDSL {
   }
 
   it should "allow the creation of parallel syncs" in {
-    val f1 = nop
-    val f2 = nop
-    val f3 = nop
-    val f4 = nop
-    val flow1 = f1 ~> f2 ~> merge~>f4
-    val flow2 = f1 ~> f3 ~> merge~>f4
+    val flow1 = nop(0) ~> nop(1) ~> merge ~> nop(3)
+    val flow2 = nop(0) ~> nop(2) ~> merge ~> nop(3)
     val net = PTGraph(FlowGraph(flow1,flow2))
     assert(net.places.size === 5)
     assert(net.transitions.size === 4)
