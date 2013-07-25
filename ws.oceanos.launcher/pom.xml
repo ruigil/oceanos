@@ -127,6 +127,12 @@
                                 <artifactItem>
                                     <groupId>ws.oceanos</groupId>
                                     <artifactId>ws.oceanos.core</artifactId>
+                                    <version>0.0.1-SNAPSHOT</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>ws.oceanos</groupId>
+                                    <artifactId>ws.oceanos.web</artifactId>
+                                    <version>0.0.1-SNAPSHOT</version>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>com.typesafe.akka</groupId>
@@ -199,6 +205,13 @@
         <dependency>
             <groupId>ws.oceanos</groupId>
             <artifactId>ws.oceanos.core</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>ws.oceanos</groupId>
+            <artifactId>ws.oceanos.web</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

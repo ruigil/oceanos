@@ -16,20 +16,14 @@
 package ws.oceanos.core
 
 import org.osgi.framework._
+import akka.osgi.ActorSystemActivator
+import akka.actor.ActorSystem
 
-class HelloScalaActivator extends BundleActivator {
-	var serviceRegistration:ServiceRegistration[HelloScalaService] = _
+class OceanOSActivator extends ActorSystemActivator {
 
-	def start(bundleContext: BundleContext){
-		Console.println("STARTING ws.oceanos.core.App")
-		//serviceRegistration = bundleContext.registerService("com.domain.osgi.scala.HelloScalaService",new HelloScalaServiceImpl(),null)
-		Console.println("REGISTERED ws.oceanos.core.App")
+  def configure(context: BundleContext, system: ActorSystem): Unit = {
+    registerService(context,system)
+    Console.println("registering actor system ["+getActorSystemName(context)+"]")
+  }
 
-	}
-
-	def stop(bundleContext: BundleContext) {
-		Console.println("STOPPED ws.oceanos.core.App")
-		//if(serviceRegistration != null) serviceRegistration.unregister
-		Console.println("UNREGISTERED ws.oceanos.core.App")
-	}
 }

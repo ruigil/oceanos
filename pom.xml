@@ -47,5 +47,6 @@
     <modules>
         <module>ws.oceanos.core</module>
         <module>ws.oceanos.launcher</module>
+        <module>ws.oceanos.web</module>
     </modules>
 </project>
