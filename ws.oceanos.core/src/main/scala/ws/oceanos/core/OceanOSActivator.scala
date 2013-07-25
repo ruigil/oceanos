@@ -18,6 +18,7 @@ package ws.oceanos.core
 import org.osgi.framework._
 import akka.osgi.ActorSystemActivator
 import akka.actor.ActorSystem
+import com.typesafe.config.{ConfigFactory, Config}
 
 class OceanOSActivator extends ActorSystemActivator {
 
@@ -25,5 +26,16 @@ class OceanOSActivator extends ActorSystemActivator {
     registerService(context,system)
     Console.println("registering actor system ["+getActorSystemName(context)+"]")
   }
+
+  override def getActorSystemConfiguration(context: BundleContext): Config = {
+    ConfigFactory.parseString(
+      """
+        | os-event-processor-mailbox {
+        |    mailbox-type = "akka.dispatch.UnboundedDequeBasedMailbox"
+        |  }
+      """.stripMargin)
+  }
+
+  override def getActorSystemName(context: BundleContext): String = "OceanOS"
 
 }

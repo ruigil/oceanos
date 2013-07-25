@@ -41,6 +41,8 @@ class OSBootstrap {
     OSBootstrap() throws BundleException {
         FrameworkFactory frameworkFactory = java.util.ServiceLoader.load(FrameworkFactory.class).iterator().next();
         final Map<String, String> config = new HashMap<String, String>();
+        // for Akka
+        config.put("org.osgi.framework.bootdelegation","sun.misc");
         framework = frameworkFactory.newFramework(config);
         framework.start();
         log.info("OSGi framework started");

@@ -164,7 +164,13 @@
             </plugin>
         </plugins>
     </build>
-
+    <!--
+    TODO: review the build system
+    the launcher searches for packages in install mode
+    that forces a global pom build each time a module changes
+    I should be able to make only the changed module and launcher
+    to see a new system
+    -->
     <dependencyManagement>
         <dependencies>
             <dependency>
