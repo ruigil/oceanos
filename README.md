@@ -9,7 +9,7 @@ Actors can be seen as micro services. They communicate asynchronously with other
 
 Composing a system out of actors, is to design a message flow. 
 
-actor1 --(msg)-> actor2 
+*actor1 --(msg)-> actor2*
 
 Meta-Actors
 ---------
