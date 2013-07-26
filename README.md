@@ -40,4 +40,4 @@ Execute the embed OSGI platform with
 Point your browser at 
   `http://localhost:8080`
 
-For an example client code. See OSGIHelloWorldServlet in module ws.oceanos.web or the tests in module ws.oceanos.core.
+For an example client code see OSGIHelloWorldServlet in module ws.oceanos.web or the tests in module ws.oceanos.core.
