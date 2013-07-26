@@ -22,9 +22,11 @@ import com.typesafe.config.{ConfigFactory, Config}
 
 class OceanOSActivator extends ActorSystemActivator {
 
+  // TODO: it makes no sense that the core has osgi dependencies
+  // this activator must be outsourced to another module, that bridges
+  // that capability
   def configure(context: BundleContext, system: ActorSystem): Unit = {
     registerService(context,system)
-    Console.println("registering actor system ["+getActorSystemName(context)+"]")
   }
 
   override def getActorSystemConfiguration(context: BundleContext): Config = {

@@ -7,8 +7,6 @@ import javax.servlet.http.HttpServletResponse
 import org.apache.felix.scr.annotations._
 import org.osgi.service.component.ComponentContext
 import org.osgi.service.http.HttpService
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 import akka.actor.{Props, ActorSystem}
 import akka.pattern.ask
 import ws.oceanos.core.dsl.FlowDSL
@@ -16,6 +14,7 @@ import ws.oceanos.core.services.Echo
 import scala.concurrent.duration._
 import akka.util.Timeout
 import scala.concurrent.Await
+import java.util.logging.Logger
 
 /*
  Small OSGI example, accessing the core from another bundle and
@@ -24,7 +23,7 @@ import scala.concurrent.Await
 
 @Component(immediate=true)
 class OSGIHelloWorldServlet extends HttpServlet with FlowDSL {
-  val log: Logger = LoggerFactory.getLogger(getClass)
+  private final val log = Logger.getLogger( getClass.getName )
 
   val path = "/"
 
@@ -37,20 +36,18 @@ class OSGIHelloWorldServlet extends HttpServlet with FlowDSL {
   @Activate
   def activate(ctx: ComponentContext ) {
     httpService.registerServlet(path, this, null, null)
-
-    log.info("{} registered", getClass.getSimpleName)
+    log.info("OceanOS Hello World Servlet registered at http://localhost:8080/")
   }
 
   @Deactivate
   def deactivate(ctx: ComponentContext) {
     httpService.unregister(path)
-    log.info("{} unregistered", getClass.getSimpleName)
+    log.info("OS HTTP unregistered")
   }
 
   @Override
   override def service(req: HttpServletRequest, resp: HttpServletResponse) {
-    resp.setContentType("text/plain")
-    resp.setCharacterEncoding("UTF-8")
+    resp.setContentType("text/plain; charset=utf-8")
 
     register("urn:hello", Props(classOf[Echo]," Hello"))
     register("urn:world", Props(classOf[Echo]," World"))

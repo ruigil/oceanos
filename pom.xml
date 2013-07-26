@@ -6,43 +6,24 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.apache</groupId>
-        <artifactId>apache</artifactId>
-        <version>10</version>
-        <relativePath />
-    </parent>
-
     <groupId>ws.oceanos</groupId>
-    <artifactId>OceanOS</artifactId>
+    <artifactId>oceanos</artifactId>
     <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
 
-    <name>OceanOS - Reactor POM</name>
+    <name>OceanOS - Main</name>
     <inceptionYear>2013</inceptionYear>
+
+    <properties>
+        <maven.compiler.source>1.6</maven.compiler.source>
+        <maven.compiler.target>1.6</maven.compiler.target>
+        <encoding>UTF-8</encoding>
+        <scala.version>2.10.2</scala.version>
+    </properties>
 
     <prerequisites>
         <maven>3.0.3</maven>
     </prerequisites>
-
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>${basedir}</directory>
-                            <includes>
-                                <include>felix-cache</include>
-                            </includes>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
     <modules>
         <module>ws.oceanos.core</module>

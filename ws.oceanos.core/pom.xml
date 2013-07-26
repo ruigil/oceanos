@@ -4,30 +4,18 @@
 	<modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache</groupId>
-        <artifactId>apache</artifactId>
-        <version>10</version>
-        <relativePath />
+        <groupId>ws.oceanos</groupId>
+        <artifactId>oceanos</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <groupId>ws.oceanos</groupId>
     <artifactId>ws.oceanos.core</artifactId>
     <packaging>bundle</packaging>
     <version>0.0.1-SNAPSHOT</version>
 
     <name>OceanOS - Core</name>
-	<inceptionYear>2013</inceptionYear>
-
-    <prerequisites>
-        <maven>3.0.3</maven>
-    </prerequisites>
-
 
 	<properties>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-		<encoding>UTF-8</encoding>
-		<scala.version>2.10.2</scala.version>
 		<bundle.symbolicName>ws.oceanos.core</bundle.symbolicName>
 		<bundle.namespace>ws.oceanos.core</bundle.namespace>
 	</properties>
@@ -73,19 +61,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
-                <artifactId>maven-scr-plugin</artifactId>
-                <version>1.12.0</version>
-                <executions>
-                    <execution>
-                        <id>generate-scr-scrdescriptor</id>
-                        <goals>
-                            <goal>scr</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
                 <version>2.3.7</version>
                 <extensions>true</extensions>
@@ -93,7 +68,6 @@
                     <instructions>
                         <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
-                        <Import-Package>!org.apache.felix.scr.annotations,*</Import-Package>
                         <Export-Package>${bundle.namespace}.dsl.*;${bundle.namespace}.services.*;version="${project.version}"</Export-Package>
                         <Private-Package>${bundle.namespace}.*</Private-Package>
                         <Bundle-Activator>${bundle.namespace}.OceanOSActivator</Bundle-Activator>
@@ -136,19 +110,9 @@
 		</dependency>
 		<!-- osgi -->
 		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.core</artifactId>
-			<version>4.3.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>org.osgi.compendium</artifactId>
-			<version>4.3.1</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.felix</groupId>
-			<artifactId>org.apache.felix.scr.annotations</artifactId>
-			<version>1.9.0</version>
+			<artifactId>org.osgi.core</artifactId>
+			<version>1.4.0</version>
 		</dependency>
 	</dependencies>
 

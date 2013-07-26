@@ -7,54 +7,27 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.apache</groupId>
-        <artifactId>apache</artifactId>
-        <version>10</version>
-        <relativePath />
+        <groupId>ws.oceanos</groupId>
+        <artifactId>oceanos</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath/>
     </parent>
 
-    <groupId>ws.oceanos</groupId>
     <artifactId>ws.oceanos.web</artifactId>
     <packaging>bundle</packaging>
     <version>0.0.1-SNAPSHOT</version>
 
     <name>OceanOS - Web</name>
-    <inceptionYear>2013</inceptionYear>
 
     <properties>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
-        <encoding>UTF-8</encoding>
-        <scala.version>2.10.2</scala.version>
         <bundle.symbolicName>ws.oceanos.web</bundle.symbolicName>
         <bundle.namespace>ws.oceanos.web</bundle.namespace>
     </properties>
-
-
-    <prerequisites>
-        <maven>3.0.3</maven>
-    </prerequisites>
 
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>
         <testSourceDirectory>src/test/scala</testSourceDirectory>
         <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-scr-plugin</artifactId>
-                <version>1.9.0</version>
-                <executions>
-                    <execution>
-                        <id>generate-scr-scrdescriptor</id>
-                        <goals>
-                            <goal>scr</goal>
-                        </goals>
-                        <configuration>
-                            <scanClasses>true</scanClasses>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
@@ -92,6 +65,22 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-scr-plugin</artifactId>
+                <version>1.9.0</version>
+                <executions>
+                    <execution>
+                        <id>generate-scr-scrdescriptor</id>
+                        <goals>
+                            <goal>scr</goal>
+                        </goals>
+                        <configuration>
+                            <scanClasses>true</scanClasses>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.6</version>
@@ -106,18 +95,16 @@
                     </includes>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 
     <dependencies>
+        <!-- core -->
+        <dependency>
+            <groupId>ws.oceanos</groupId>
+            <artifactId>ws.oceanos.core</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
         <!-- akka -->
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -129,23 +116,17 @@
             <artifactId>akka-testkit_2.10</artifactId>
             <version>2.2.0</version>
         </dependency>
-        <!-- akka -->
-        <dependency>
-            <groupId>ws.oceanos</groupId>
-            <artifactId>ws.oceanos.core</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
+        <!-- osgi -->
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
-            <version>4.2.0</version>
+            <version>4.3.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.osgi</groupId>
+            <groupId>org.apache.felix</groupId>
             <artifactId>org.osgi.compendium</artifactId>
-            <version>4.2.0</version>
+            <version>1.4.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -154,16 +135,11 @@
             <version>1.9.0</version>
             <scope>provided</scope>
         </dependency>
+        <!-- servlet -->
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>servlet-api</artifactId>
             <version>2.4</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.6.2</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
