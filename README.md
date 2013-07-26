@@ -20,7 +20,7 @@ OceanOS provides some primitives to compose these message flows into a new kind 
 
 `actor3 --(msg)-> meta-actor --(msg)-> actor4`
 
-These meta-actors keep the rule of consistent state transitions with a mechanism os event sourcing and serialization. They also define the network topology of message flows, removing the flow dependencies from the actor themselves, and allowing to reconfigurable topologies at runtime.
+These meta-actors keep the rule of consistent state transitions with a mechanism of [event sourcing](http://martinfowler.com/eaaDev/EventSourcing.html) and serialization. They also define the network topology of message flows, removing the flow dependencies from the actor themselves, and allowing to reconfigurable topologies at runtime.
 
 Build
 --------
