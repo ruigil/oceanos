@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ws.oceanos.core.dsl
+package ws.oceanos.core.flow
 
 import akka.actor.Props
 
@@ -24,9 +24,11 @@ trait Flow {
 
 case class FlowAssoc(from: Flow, to: Flow) extends Flow
 
-object FlowRegistry {
+object FlowRegistry extends Registry {
   import collection._
-  val props = mutable.Map("nop" -> Props.empty)
+  def get(uri: String): Option[Props] = propsMap.get(uri)
+  def register(uri: String, props: Props) = propsMap(uri) = props
+  private val propsMap = mutable.Map("nop" -> Props.empty)
   var id = 0
   def nextId(prefix: String): String = { id = id + 1; prefix + id }
 }

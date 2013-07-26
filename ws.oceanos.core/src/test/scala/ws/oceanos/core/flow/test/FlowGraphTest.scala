@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ws.oceanos.core.dsl.test
+package ws.oceanos.core.flow.test
 
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
-import ws.oceanos.core.dsl.FlowDSL
+import ws.oceanos.core.flow.FlowContext
 import ws.oceanos.core.graph.FlowGraph
 
 
 @RunWith(classOf[JUnitRunner])
-class FlowGraphTest extends FlatSpec with ShouldMatchers with FlowDSL {
+class FlowGraphTest extends FlatSpec with ShouldMatchers with FlowContext {
 
   "A FlowGraph" should "have at minimum one node when created" in {
     val graph = FlowGraph(nop())

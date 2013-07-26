@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ws.oceanos.core.dsl
+package ws.oceanos.core.flow
 
 trait Element extends Flow {
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ws.oceanos.core
+package ws.oceanos.osgi
 
 import org.osgi.framework._
 import akka.osgi.ActorSystemActivator

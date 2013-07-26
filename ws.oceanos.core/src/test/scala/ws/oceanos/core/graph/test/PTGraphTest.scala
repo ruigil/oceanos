@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ws.oceanos.core.event.test
+package ws.oceanos.core.graph.test
 
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.ShouldMatchers
-import ws.oceanos.core.dsl.FlowDSL
+import ws.oceanos.core.flow.FlowContext
 import ws.oceanos.core.graph.{PTEdge, FlowGraph, PTGraph}
 
 
 @RunWith(classOf[JUnitRunner])
-class PTGraphTest extends FlatSpec with ShouldMatchers with FlowDSL {
-  import ws.oceanos.core.dsl._
-  
+class PTGraphTest extends FlatSpec with ShouldMatchers with FlowContext {
+
   "A PTGraph" should "have at minimum of one place and one transition when created" in {
     val net = PTGraph(FlowGraph(nop()))
     assert(net.places.size === 1)

@@ -13,10 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ws.oceanos.core.dsl
+package ws.oceanos.core.flow
 
 import akka.actor.Props
 
-trait FlowDSL extends Component with Element {
-  def register(uri: String, props: Props) = FlowRegistry.props(uri) = props
+trait FlowContext extends Service with Element {
+
+  val registry: Registry = FlowRegistry
+
+  def register(uri: String, props: Props) = registry.register(uri, props)
+
+  def n(uri: String, id: Int = 0): Service = {
+    val s = registry.get(uri)
+    if (s.isDefined) SimpleService(s.get,s"$uri:$id")
+    else throw new Exception("Service not Found")
+  }
+
+  def nop(id: Int = 0): Service = n("nop",id)
 }

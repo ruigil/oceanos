@@ -15,12 +15,11 @@
  */
 package ws.oceanos.core.event.test
 
-import akka.actor.{Props, ActorSystem}
+import akka.actor.{ActorLogging, Actor, Props, ActorSystem}
 import akka.testkit.{TestKit, ImplicitSender }
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import org.scalatest.matchers.ShouldMatchers
-import ws.oceanos.core.dsl._
-import ws.oceanos.core.services._
+import ws.oceanos.core.flow._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.typesafe.config.ConfigFactory
@@ -32,7 +31,7 @@ class EventProcessorTest(_system: ActorSystem)
   with FlatSpec
   with ShouldMatchers
   with BeforeAndAfterAll
-  with FlowDSL {
+  with FlowContext {
 
   def this() = this(ActorSystem("EventProcessorTest",
     ConfigFactory.parseString(
@@ -46,7 +45,10 @@ class EventProcessorTest(_system: ActorSystem)
 
   override def afterAll() = { system.shutdown() }
 
+
   class Helper {
+
+
     register("hello", Props(classOf[Echo],"Hello"))
     register("beautiful", Props(classOf[Echo],"Beautiful"))
     register("amazing", Props(classOf[Echo],"Amazing"))
@@ -56,7 +58,7 @@ class EventProcessorTest(_system: ActorSystem)
     }
   }
 
-  "Event Component" should "reply to requests" in new Helper {
+  "Event Service" should "reply to requests" in new Helper {
 
     val ep = actor( n("world") )
 

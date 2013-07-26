@@ -29,5 +29,6 @@
         <module>ws.oceanos.core</module>
         <module>ws.oceanos.launcher</module>
         <module>ws.oceanos.web</module>
+        <module>ws.oceanos.osgi</module>
     </modules>
 </project>

@@ -15,7 +15,7 @@
  */
 package ws.oceanos.core.graph
 
-import ws.oceanos.core.dsl._
+import ws.oceanos.core.flow._
 
 class PTGraph extends DiGraph[PT,PTEdge,PTGraph] {
 
@@ -59,14 +59,14 @@ object PlaceType extends Enumeration {
 import PlaceType._
 
 case class Place(name: String, placeType: PlaceType = Mid) extends PT
-case class Transition(service: Component) extends PT
+case class Transition(service: Service) extends PT
 
 case class PTEdge(f: PT, t: PT, predicate: Option[Any=>Boolean] = None) extends DiEdge[PT](f,t)
 
 
 object PTGraph {
   import collection._
-  private val serviceMap = mutable.Map.empty[Component,PTEdge]
+  private val serviceMap = mutable.Map.empty[Service,PTEdge]
 
   def apply(flowGraph: FlowGraph): PTGraph = {
 
@@ -79,7 +79,7 @@ object PTGraph {
   }
 
   private def createPT(net: PTGraph, flowGraph: FlowGraph) = {
-    val services = flowGraph.nodes collect { case s: Component => s }
+    val services = flowGraph.nodes collect { case s: Service => s }
     val init = flowGraph.in
 
     services.foldLeft(net) { (n,service) =>
@@ -93,17 +93,17 @@ object PTGraph {
   private def defineOutputs(net: PTGraph, flowGraph: FlowGraph) = {
     flowGraph.edges.foldLeft(net) { (n,e) => e match {
         // service outputs
-        case FlowEdge(source: Component, target: Component) =>
+        case FlowEdge(source: Service, target: Service) =>
           n + PTEdge(serviceMap(source).to, serviceMap(target).from)
         // condition outputs
-        case FlowEdge(source: Component, condition: Condition) =>
-          val targets = flowGraph.successors(condition) collect {case s: Component => s}
+        case FlowEdge(source: Service, condition: Condition) =>
+          val targets = flowGraph.successors(condition) collect {case s: Service => s}
           targets.foldLeft(n) { (n,target) =>
             n + PTEdge(serviceMap(source).to, serviceMap(target).from, Some(condition.predicate) )
           }
         // parallel sync
-        case FlowEdge(source: Component, sync: ParallelSync) =>
-          val targets = flowGraph.successors(sync) collect {case s: Component => s}
+        case FlowEdge(source: Service, sync: ParallelSync) =>
+          val targets = flowGraph.successors(sync) collect {case s: Service => s}
           targets.foldLeft(n) { (n,target) =>
               if (n.edges.exists( e => e.to == serviceMap(target).from)) {
                 val place = Place(FlowRegistry.nextId(target.id), Mid)
@@ -112,7 +112,7 @@ object PTGraph {
               else n + PTEdge(serviceMap(source).to, serviceMap(target).from)
           }
         // out marker
-        case FlowEdge(source: Component, out: OutMarker) =>
+        case FlowEdge(source: Service, out: OutMarker) =>
           val place = Place(FlowRegistry.nextId("Out"), Out)
           n + PTEdge(serviceMap(source).to, place)
 

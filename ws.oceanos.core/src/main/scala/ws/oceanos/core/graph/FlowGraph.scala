@@ -15,20 +15,20 @@
  */
 package ws.oceanos.core.graph
 
-import ws.oceanos.core.dsl._
+import ws.oceanos.core.flow._
 
 class FlowGraph extends DiGraph[Flow,FlowEdge,FlowGraph] {
 
-  def in: Set[Component] =
+  def in: Set[Service] =
     for {
       init <- nodes collect { case i: InMarker => i }
-      service <- successors(init).collect { case s: Component => s }
+      service <- successors(init).collect { case s: Service => s }
     } yield service
 
-  def out: Set[Component] =
+  def out: Set[Service] =
     for {
       out <- nodes collect { case i: OutMarker => i }
-      service <- predecessors(out).collect { case s: Component => s }
+      service <- predecessors(out).collect { case s: Service => s }
     } yield service
 
   def copy(ns: Set[Flow], es: List[FlowEdge]) = new FlowGraph {

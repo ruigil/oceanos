@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ws.oceanos.core.dsl.test
+package ws.oceanos.core.graph.test
 
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec

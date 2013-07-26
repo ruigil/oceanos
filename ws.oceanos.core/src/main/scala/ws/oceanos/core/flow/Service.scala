@@ -13,44 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ws.oceanos.core.dsl
+package ws.oceanos.core.flow
 
-import akka.actor.{Props, Actor}
-import scala.reflect.ClassTag
+import akka.actor.Props
 import ws.oceanos.core.event.{ProxyActor, TransformActor, EventProcessorActor}
-import ws.oceanos.core.services.Echo
 import ws.oceanos.core.graph.{FlowGraph, PTGraph}
 
-trait Component extends Flow  {
+trait Service extends Flow  {
   val properties: Props = Props.empty
   val id: String = ""
 
-  def flow(flows: Flow*): Component = new ComplexService(flows)
+  def flow(flows: Flow*): Service = new ComplexService(flows)
 
-  def n(uri: String, id: Int = 0): Component = {
-    val s = FlowRegistry.props.get(uri)
-    if (s.isDefined) SimpleService(s.get,s"$uri:$id")
-    else throw new Exception("Service not Found")
-  }
+  def map(f: Any => Any): Service = new Transform(f)
 
-  def nop(id: Int = 0): Component = n("nop",id)
-
-  def map(f: Any => Any): Component = new Transform(f)
-
-  implicit def processor2props(flow: Component): Props = flow.properties
+  implicit def component2props(flow: Service): Props = flow.properties
 }
 
-case class SimpleService(serviceProps: Props, override val id: String) extends Component {
+case class SimpleService(serviceProps: Props, override val id: String) extends Service {
   override val properties = Props(new ProxyActor(serviceProps))
 }
 
-class ComplexService(flows: Seq[Flow]) extends Component {
+class ComplexService(flows: Seq[Flow]) extends Service {
   override val properties = Props(new EventProcessorActor(PTGraph(FlowGraph(flows:_*))))
     .withMailbox("os-event-processor-mailbox")
   override val id = FlowRegistry.nextId("Flow")
 }
 
-class Transform(function: Any => Any) extends Component {
+class Transform(function: Any => Any) extends Service {
   override val properties = Props(new TransformActor(function))
   override val id = FlowRegistry.nextId("Transform")
 }

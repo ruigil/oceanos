@@ -7,14 +7,13 @@ import javax.servlet.http.HttpServletResponse
 import org.apache.felix.scr.annotations._
 import org.osgi.service.component.ComponentContext
 import org.osgi.service.http.HttpService
-import akka.actor.{Props, ActorSystem}
+import akka.actor.ActorSystem
 import akka.pattern.ask
-import ws.oceanos.core.dsl.FlowDSL
-import ws.oceanos.core.services.Echo
 import scala.concurrent.duration._
 import akka.util.Timeout
 import scala.concurrent.Await
 import java.util.logging.Logger
+import ws.oceanos.core.flow.{Registry, FlowContext}
 
 /*
  Small OSGI example, accessing the core from another bundle and
@@ -22,10 +21,13 @@ import java.util.logging.Logger
  */
 
 @Component(immediate=true)
-class OSGIHelloWorldServlet extends HttpServlet with FlowDSL {
+class OSGIHelloWorldServlet extends HttpServlet with FlowContext {
   private final val log = Logger.getLogger( getClass.getName )
 
   val path = "/"
+
+  @Reference
+  override val registry: Registry = null
 
   @Reference
   private val httpService: HttpService = null
@@ -48,9 +50,6 @@ class OSGIHelloWorldServlet extends HttpServlet with FlowDSL {
   @Override
   override def service(req: HttpServletRequest, resp: HttpServletResponse) {
     resp.setContentType("text/plain; charset=utf-8")
-
-    register("urn:hello", Props(classOf[Echo]," Hello"))
-    register("urn:world", Props(classOf[Echo]," World"))
 
     val service = flow( n("urn:hello") ~> filter(_ => true) ~> n("urn:world") )
 

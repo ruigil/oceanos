@@ -15,7 +15,7 @@
 
     <name>OceanOS - Core</name>
 
-	<properties>
+    <properties>
 		<bundle.symbolicName>ws.oceanos.core</bundle.symbolicName>
 		<bundle.namespace>ws.oceanos.core</bundle.namespace>
 	</properties>
@@ -68,9 +68,8 @@
                     <instructions>
                         <Bundle-SymbolicName>${bundle.symbolicName}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
-                        <Export-Package>${bundle.namespace}.dsl.*;${bundle.namespace}.services.*;version="${project.version}"</Export-Package>
+                        <Export-Package>${bundle.namespace}.flow.*;version="${project.version}"</Export-Package>
                         <Private-Package>${bundle.namespace}.*</Private-Package>
-                        <Bundle-Activator>${bundle.namespace}.OceanOSActivator</Bundle-Activator>
                     </instructions>
                 </configuration>
             </plugin>
@@ -107,12 +106,6 @@
 			<artifactId>scalatest_2.10</artifactId>
 			<version>1.9.1</version>
 			<scope>test</scope>
-		</dependency>
-		<!-- osgi -->
-		<dependency>
-			<groupId>org.apache.felix</groupId>
-			<artifactId>org.osgi.core</artifactId>
-			<version>1.4.0</version>
 		</dependency>
 	</dependencies>
 
