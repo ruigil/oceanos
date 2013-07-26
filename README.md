@@ -12,7 +12,7 @@ Composing a system out of actors, is to design a message flow.
 actor1 --(msg)-> actor2 
 
 Meta-Actors
-========
+---------
 
 OceanOS provides some primitives to compose these message flows into a new kind of meta-actor.
 
@@ -23,7 +23,7 @@ actor3 --(msg)-> meta-actor --(msg)-> actor4
 These meta-actors keep the rule of consistent state transitions with a mechanism os event sourcing and serialization. They also define the network topology of message flows, removing the flow dependencies from the actor themselves, and allowing to reconfigurable topologies at runtime.
 
 Build
-=======
+--------
 
 The project uses maven 3.0.3
 
