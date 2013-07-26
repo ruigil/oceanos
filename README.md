@@ -22,7 +22,7 @@ OceanOS provides some primitives to compose these message flows into a new kind 
 
 These meta-actors keep the rule of consistent state transitions with a mechanism of [event sourcing](http://martinfowler.com/eaaDev/EventSourcing.html) and serialization. They also define the network topology of message flows, removing the flow dependencies from the actor themselves, and allowing to reconfigurable topologies at runtime. 
 
-They keep the asynchronous nature of the message flow they represent. This means that, if the message flow has parallel branches, they will still be executed in parallel. It is up to the message flow designer to introduce points of synchrony with the primitives provided. The primitives are still being developed. Currently only pipelines, filter, map and parallel sync (*merge*) are implemented. Please see 'ws.oceanos.core' tests for examples. 
+They keep the asynchronous nature of the message flow they represent. This means that, if the message flow has parallel branches, they will still be executed in parallel. It is up to the message flow designer to introduce points of synchrony with the primitives provided. The primitives are still being developed. Currently only pipelines, conditional branching, transforms, and parallel syncs are implemented with `(~>, filter, map and merge)`. Please see `ws.oceanos.core` tests for examples. 
 
 Build
 --------
