@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package ws.oceanos.core.flow
+package ws.oceanos.core.event
 
-trait Element extends Flow {
+import akka.actor.Actor
+import ws.oceanos.core.event.EventProcessorState.{Out, In, Fire}
+import scala.util.Success
 
-  def filter(predicate: Any => Boolean): Element = Condition(predicate)
+class OutInActor extends Actor  {
 
-  def in: Element  = InMarker(FlowRegistry.nextId("In"))
+  def receive: Receive = {
+    case Fire(messages) =>
+      context.parent ! (if (messages.size == 1) Out(messages.head) else Out(messages))
+    case In(messages) =>
+      val requester = sender
+      requester ! Success(messages)
+  }
 
-  def out: Element  = OutMarker(FlowRegistry.nextId("Out"))
-
-  def merge: Element  = ParallelSync(FlowRegistry.nextId("Init"))
 }
-
-
-case class Condition(predicate: Any => Boolean) extends Element
-
-case class InMarker(id: String) extends Element
-
-case class OutMarker(id: String) extends Element
-
-
-// TODO: This should be configured wih a merge strategy
-case class ParallelSync(id: String) extends Element
-

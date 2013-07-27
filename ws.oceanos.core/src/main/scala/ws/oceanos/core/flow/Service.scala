@@ -16,7 +16,7 @@
 package ws.oceanos.core.flow
 
 import akka.actor.Props
-import ws.oceanos.core.event.{ProxyActor, TransformActor, EventProcessorActor}
+import ws.oceanos.core.event.{OutInActor, ProxyActor, TransformActor, EventProcessorActor}
 import ws.oceanos.core.graph.{FlowGraph, PTGraph}
 
 trait Service extends Flow  {
@@ -26,6 +26,8 @@ trait Service extends Flow  {
   def flow(flows: Flow*): Service = new ComplexService(flows)
 
   def map(f: Any => Any): Service = new Transform(f)
+
+  def outin: Service = new OutIn
 
   implicit def component2props(flow: Service): Props = flow.properties
 }
@@ -43,4 +45,9 @@ class ComplexService(flows: Seq[Flow]) extends Service {
 class Transform(function: Any => Any) extends Service {
   override val properties = Props(new TransformActor(function))
   override val id = FlowRegistry.nextId("Transform")
+}
+
+class OutIn extends Service {
+  override val properties = Props(new OutInActor)
+  override val id = FlowRegistry.nextId("OutIn")
 }

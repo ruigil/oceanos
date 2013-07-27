@@ -21,11 +21,14 @@ import collection._
 
 object EventProcessorState {
   case class Fire(messages: List[Any])
-
+  case class In(messages: Any)
+  case class Out(messages: Any)
 
   class Event(name: String, time: Long)
+  case class Init(service: ActorRef, message: Any, time: Long) extends Event("Init",time)
   case class Done(service: ActorRef, message: Any, time: Long) extends Event("Done",time)
   case class Start(service: ActorRef, message:List[Any], time: Long) extends Event("Start",time)
+  case class InMsg(service: ActorRef, message:Any, time: Long) extends Event("In",time)
 
   object ServiceState extends Enumeration {
     val Idle, Running, Active = Value
@@ -53,11 +56,6 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
     outputs = for (PTEdge(_,place:Place,cond) <- graph.outputsOf(transition)) yield new Output(cond,queues(place))
   } yield (ref,new Service(ServiceState.Idle,inputs,outputs))).toMap
 
-  def init(message: Any) = {
-    initial.foreach(_ clear())
-    initial.foreach(_ enqueue message)
-    updateServiceState()
-  }
 
   def process(event: Event) = {
 
@@ -76,10 +74,17 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
       case Start(ref,message,_) =>
         services(ref).state = ServiceState.Running
         ref.tell(Fire(message),context.self)
+      case InMsg(ref,message,_) =>
+        running.foreach( a => a.tell(In(message),context.self) )
+      case Init(ref,message,_) =>
+        initial.foreach(_ clear())
+        initial.foreach(_ enqueue message)
+        updateServiceState()
     }
   }
 
-  def done(ref: ActorRef, message: Any): Unit = process(Done(ref, message, System.currentTimeMillis()))
+  private def running: List[ActorRef] =
+    services.collect{ case (ref,service) if service.state == ServiceState.Running =>  ref }.toList
 
   // start active services
   def next(): Unit = {

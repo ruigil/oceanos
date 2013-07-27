@@ -23,6 +23,8 @@ import ws.oceanos.core.flow._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.typesafe.config.ConfigFactory
+import scala.concurrent.duration._
+
 
 @RunWith(classOf[JUnitRunner])
 class EventProcessorTest(_system: ActorSystem)
@@ -58,7 +60,7 @@ class EventProcessorTest(_system: ActorSystem)
     }
   }
 
-  "Event Service" should "reply to requests" in new Helper {
+  "Event Processor" should "reply to requests" in new Helper {
 
     val ep = actor( n("world") )
 
@@ -86,7 +88,6 @@ class EventProcessorTest(_system: ActorSystem)
 
   it should "allow to process several request in a row" in new Helper {
 
-    import scala.concurrent.duration._
 
     val ep = actor( n("hello") )
 
@@ -140,6 +141,29 @@ class EventProcessorTest(_system: ActorSystem)
      case m:String if m == "TestHelloBeautifulTestHelloAmazingWorld" => true
      case s => {println(s);false}
    }
+
+  }
+
+  it should "allow multi state" in new Helper {
+
+    val ep = actor(
+      in~>n("hello")~>outin~>n("beautiful")~>outin~>n("world")~>out
+    )
+
+    ep ! "Test"
+    val messages1 = receiveN(1, 1.seconds)
+    assert( messages1.size == 1)
+    assert( messages1.head == "TestHello")
+
+    ep ! "Test"
+    val messages2 = receiveN(1, 1.seconds)
+    assert( messages2.size == 1)
+    assert( messages2.head == "TestBeautiful")
+
+    ep ! "Test"
+    val messages3 = receiveN(1, 1.seconds)
+    assert( messages3.size == 1)
+    assert( messages3.head == "TestWorld")
 
   }
 

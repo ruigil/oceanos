@@ -18,56 +18,62 @@ package ws.oceanos.core.event
 import akka.actor._
 import scala.concurrent.duration._
 import akka.actor.SupervisorStrategy._
-import scala.util.{Success, Failure}
-import akka.actor.OneForOneStrategy
 import ws.oceanos.core.graph.PTGraph
+import scala.util.Success
+import scala.util.Failure
+import akka.actor.OneForOneStrategy
 
 
 class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLogging {
   import context._
+  import ws.oceanos.core.event.EventProcessorState._
 
   val epState = new EventProcessorState(graph,context)
 
-  var start = 0L
-
-  //def receive = accept
+  def receive = accept
 
   // TODO: This mechanics assumes request-reply. What about request only?
-  def receive: Receive = {
+  def accept: Receive = {
     case message =>
-      //start = System.currentTimeMillis()
-      //println("start actor"+start)
-      epState.init(message)
-      //println("in"+(System.currentTimeMillis()-start))
       val client = sender
-      epState.next()
-      //println("next"+(System.currentTimeMillis()-start))
       become(request(client))
+      epState.process(Init(client,message, System.currentTimeMillis()))
+      epState.next()
   }
   
   def request(client: ActorRef): Receive = {
+    running(client) orElse {
+      case Out(message) =>
+        client ! message
+        unstashAll()
+        become(waitForIn(client))
 
+      case _ => stash()
+    }
+  }
+
+  def waitForIn(client: ActorRef): Receive = {
+    running(client) orElse {
+      case message =>
+        epState.process(InMsg(sender,message, System.currentTimeMillis()))
+        become(request(client))
+    }
+  }
+
+  def running(client: ActorRef): Receive = {
     case Success(message) =>
-      //println("success"+(System.currentTimeMillis()-start))
-      epState.done(sender,message)
-      //println("done"+(System.currentTimeMillis()-start))
+      epState.process( Done(sender,message, System.currentTimeMillis()))
       if (epState.hasNext) epState.next()
       else {
-        //println("reply"+(System.currentTimeMillis()-start))
-        //log.info(s"reply $request")
         client ! message
-        become(receive)
-        //println("become"+(System.currentTimeMillis()-start))
+        become(accept)
         unstashAll()
-        //println("unstash"+(System.currentTimeMillis()-start))
       }
 
     case Failure(message) =>
       client ! message
+      become(accept)
       unstashAll()
-      become(receive)
-
-    case _ => stash()
   }
 
 
