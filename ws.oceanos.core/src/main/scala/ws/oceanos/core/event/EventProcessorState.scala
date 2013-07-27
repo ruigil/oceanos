@@ -50,7 +50,7 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
 
   val queues = graph.places.map( p => (p,mutable.Queue.empty[Any])).toMap
   val initial = graph.initial.map(p => queues(p))
-  val terminal = graph.terminal
+  val terminal = graph.terminal.map(p => queues(p))
 
   val services = (for {
     transition <- graph.transitions
@@ -84,7 +84,7 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
         initial.foreach(_ enqueue message)
         updateServiceState()
       case End(_) =>
-        val result = terminal.flatMap(p => if (!queues(p).isEmpty) queues(p).front :: Nil else Nil)
+        val result = terminal.collect{ case q: mutable.Queue[Any] if !q.isEmpty => q.front }
         context.self ! Finished(if (result.size == 1) result.head else result)
     }
   }
@@ -101,9 +101,8 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
       }
   }
 
-  // have we reach the end state ?
-  private def hasNext: Boolean = terminal.forall(p => queues(p).isEmpty)
-    //services.exists{ case (_,service) => service.inputs.forall(_.queue.size >0) } ||
+  // have we reach an end state ?
+  private def hasNext: Boolean = terminal.forall(_.isEmpty)
 
 
   private def updateServiceState() {
