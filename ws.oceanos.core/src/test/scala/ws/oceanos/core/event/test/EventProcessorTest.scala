@@ -15,7 +15,7 @@
  */
 package ws.oceanos.core.event.test
 
-import akka.actor.{ActorLogging, Actor, Props, ActorSystem}
+import akka.actor.{Props, ActorSystem}
 import akka.testkit.{TestKit, ImplicitSender }
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 import org.scalatest.matchers.ShouldMatchers
@@ -66,24 +66,20 @@ class EventProcessorTest(_system: ActorSystem)
 
     ep ! "Hello"
 
-    fishForMessage() {
-      case m:String if m == "HelloWorld" => true
-      case _ => false
-    }
+    val message = receiveN(1, 2.seconds)
+    assert( message.head === "HelloWorld")
 
   }
+
   it should "allow to create pipelines" in new Helper {
 
     val ep = actor( n("hello")~>n("world") )
 
-    //val ep = actor( "hello" ~> "os:/world")
-
     ep ! "Great"
 
-    fishForMessage() {
-      case m:String if m == "GreatHelloWorld" => true
-      case _ => false
-    }
+    val message = receiveN(1, 1.seconds)
+    assert( message.head == "GreatHelloWorld")
+
   }
 
   it should "allow to process several request in a row" in new Helper {
@@ -101,53 +97,45 @@ class EventProcessorTest(_system: ActorSystem)
 
   it should "allow to create conditional branches" in new Helper {
 
-   val ep = actor(
-     n("hello")~>filter(_ == "Path1Hello")~>n("world"),
-     n("hello")~>filter(_ == "Path2Hello")~>n("beautiful")~>n("world",1)
-   )
+    val ep = actor(
+      n("hello")~>filter(_ == "Path1Hello")~>n("world"),
+      n("hello")~>filter(_ == "Path2Hello")~>n("beautiful")~>n("world",1)
+    )
 
+    ep ! "Path2"
+    val message = receiveN(1, 1.seconds)
+    assert( message.head == "Path2HelloBeautifulWorld")
 
-   ep ! "Path2"
-
-   fishForMessage() {
-     case m:String if m == "Path2HelloBeautifulWorld" => true
-     case s => false
-   }
   }
 
   it should "allow message transforms" in new Helper {
 
-   val ep = actor( n("hello")~>map(_ + "Map")~>n("world"))
+    val ep = actor( n("hello")~>map(_ + "Map")~>n("world"))
 
-   ep ! "Test"
+    ep ! "Test"
 
-   fishForMessage() {
-     case m:String if m == "TestHelloMapWorld" => true
-     case s => false
-   }
+    val message = receiveN(1, 1.seconds)
+    assert( message.head == "TestHelloMapWorld")
   }
 
 
   it should "allow sync parallel branches" in new Helper {
 
-   val ep = actor(
-     n("hello")~>n("beautiful")~>merge~>n("world"),
-     n("hello")~>n("amazing")~>merge~>n("world")
-   )
+    val ep = actor(
+      n("hello")~>n("beautiful")~>merge~>n("world"),
+      n("hello")~>n("amazing")~>merge~>n("world")
+    )
 
-   ep ! "Test"
-
-   fishForMessage() {
-     case m:String if m == "TestHelloBeautifulTestHelloAmazingWorld" => true
-     case s => {println(s);false}
-   }
+    ep ! "Test"
+    val message = receiveN(1, 1.seconds)
+    assert( message.head == "TestHelloBeautifulTestHelloAmazingWorld")
 
   }
 
   it should "allow multi state" in new Helper {
 
     val ep = actor(
-      in~>n("hello")~>outin~>n("beautiful")~>outin~>n("world")~>out
+      n("hello")~>outin~>n("beautiful")~>outin~>n("world")
     )
 
     ep ! "Test"

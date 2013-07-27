@@ -19,17 +19,23 @@ import ws.oceanos.core.flow._
 
 class FlowGraph extends DiGraph[Flow,FlowEdge,FlowGraph] {
 
-  def in: Set[Service] =
-    for {
+  def in: List[Service] =  {
+    val i = for {
       init <- nodes collect { case i: InMarker => i }
       service <- successors(init).collect { case s: Service => s }
     } yield service
+    if (!i.isEmpty) i.toList
+    else sources.collect { case s: Service => s }
+  }
 
-  def out: Set[Service] =
-    for {
+  def out: List[Service] = {
+    val o = for {
       out <- nodes collect { case i: OutMarker => i }
       service <- predecessors(out).collect { case s: Service => s }
     } yield service
+    if (!o.isEmpty) o.toList
+    else sinks.collect { case s: Service => s }
+  }
 
   def copy(ns: Set[Flow], es: List[FlowEdge]) = new FlowGraph {
     override val nodes = ns

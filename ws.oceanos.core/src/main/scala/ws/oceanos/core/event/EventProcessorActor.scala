@@ -38,7 +38,6 @@ class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLog
       val client = sender
       become(request(client))
       epState.process(Init(client,message, System.currentTimeMillis()))
-      epState.next()
   }
   
   def request(client: ActorRef): Receive = {
@@ -63,14 +62,12 @@ class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLog
   def running(client: ActorRef): Receive = {
     case Success(message) =>
       epState.process( Done(sender,message, System.currentTimeMillis()))
-      if (epState.hasNext) epState.next()
-      else {
-        client ! message
-        become(accept)
-        unstashAll()
-      }
-
     case Failure(message) =>
+      // TODO: Failure should be handled differently
+      client ! message
+      become(accept)
+      unstashAll()
+    case Finished(message) =>
       client ! message
       become(accept)
       unstashAll()

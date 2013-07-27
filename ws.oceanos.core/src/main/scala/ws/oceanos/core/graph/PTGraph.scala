@@ -40,13 +40,9 @@ class PTGraph extends DiGraph[PT,PTEdge,PTGraph] {
       if trans == transition
     } yield edge
 
-  lazy val initialMarking: List[Place] = {
-    // if an initial marking was specified, use it
-    // or else search for places with no inputs
-    val init = places.filter{_.placeType == PlaceType.In}
-    if (!init.isEmpty) init.toList
-    else sources.collect { case p:Place => p }
-  }
+  def initial: Set[Place] = places.collect{ case p @ Place(_,PlaceType.I) => p }
+
+  def terminal: Set[Place] = places.collect{ case p @ Place(_,PlaceType.O) => p }
 
 }
 
@@ -54,11 +50,11 @@ trait PT
 
 object PlaceType extends Enumeration {
   type PlaceType = Value
-  val In, Out, Mid = Value
+  val I, O, N = Value
 }
 import PlaceType._
 
-case class Place(name: String, placeType: PlaceType = Mid) extends PT
+case class Place(name: String, placeType: PlaceType = N) extends PT
 case class Transition(service: Service) extends PT
 
 case class PTEdge(f: PT, t: PT, predicate: Option[Any=>Boolean] = None) extends DiEdge[PT](f,t)
@@ -80,13 +76,16 @@ object PTGraph {
 
   private def createPT(net: PTGraph, flowGraph: FlowGraph) = {
     val services = flowGraph.nodes collect { case s: Service => s }
-    val init = flowGraph.in
+    val in = flowGraph.in
+    val out = flowGraph.out
 
     services.foldLeft(net) { (n,service) =>
-      val placeType = if (init contains service) In else Mid
-      val edge = PTEdge( Place(service.id, placeType), Transition(service) )
-      serviceMap(service) = edge
-      n + edge
+      val placeType = if (in contains service) I else N
+      val inputEdge = PTEdge( Place(service.id, placeType), Transition(service) )
+      serviceMap(service) = inputEdge
+      if (out contains service) {
+        n + inputEdge + PTEdge( Transition(service), Place(service.id, O) )
+      } else n + inputEdge
     }
   }
 
@@ -106,15 +105,11 @@ object PTGraph {
           val targets = flowGraph.successors(sync) collect {case s: Service => s}
           targets.foldLeft(n) { (n,target) =>
               if (n.edges.exists( e => e.to == serviceMap(target).from)) {
-                val place = Place(FlowRegistry.nextId(target.id), Mid)
+                val place = Place(FlowRegistry.nextId(target.id), N)
                 n + PTEdge(serviceMap(source).to, place) + PTEdge(place, serviceMap(target).to)
               }
               else n + PTEdge(serviceMap(source).to, serviceMap(target).from)
           }
-        // out marker
-        case FlowEdge(source: Service, out: OutMarker) =>
-          val place = Place(FlowRegistry.nextId("Out"), Out)
-          n + PTEdge(serviceMap(source).to, place)
 
         case _ => n
       }
