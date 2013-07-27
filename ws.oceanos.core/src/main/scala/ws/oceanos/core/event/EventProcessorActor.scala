@@ -54,8 +54,12 @@ class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLog
   def waitForIn(client: ActorRef): Receive = {
     running(client) orElse {
       case message =>
-        epState.process(InMsg(sender,message, System.currentTimeMillis()))
-        become(request(client))
+        // TODO: What does it mean to being processing parallell stuf for a client
+        // and then change clients with another 'in' message?
+        // clients refs are not absolute because they can come from transient futures
+        val anotherClient = sender
+        epState.process(InMsg(anotherClient,message, System.currentTimeMillis()))
+        become(request(anotherClient))
     }
   }
 

@@ -155,4 +155,27 @@ class EventProcessorTest(_system: ActorSystem)
 
   }
 
+  it should "allow choreography with others" in new Helper {
+
+
+    val ep = actor(
+      n("hello")~>outin~>n("beautiful")~>outin~>n("world")
+    )
+    register("ask",Props(new Forward(ep)))
+    register("how",Props(new Echo("How")))
+    register("are",Props(new Echo("Are")))
+    register("you",Props(new Echo("You")))
+
+    val ep2 = actor(
+      n("how")~>n("ask",0)~>n("are")~>n("ask",1)~>n("you")~>n("ask",2)
+    )
+
+    ep2 ! "Test"
+    val messages = receiveN(1, 3.seconds)
+    assert( messages.size == 1)
+    assert( messages.head == "TestHowHelloAreBeautifulYouWorld")
+
+
+  }
+
 }
