@@ -26,7 +26,7 @@ trait FlowContext extends Service with Element {
   def n(uri: String, id: Int = 0): Service = {
     val s = registry.get(uri)
     if (s.isDefined) SimpleService(s.get,s"$uri:$id")
-    else throw new Exception("Service not Found")
+    else throw new Exception(s"Service [$uri] not Found")
   }
 
   def nop(id: Int = 0): Service = n("nop",id)

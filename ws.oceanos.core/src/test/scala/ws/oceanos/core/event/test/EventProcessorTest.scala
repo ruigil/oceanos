@@ -78,19 +78,21 @@ class EventProcessorTest(_system: ActorSystem)
     ep ! "Great"
 
     val message = receiveN(1, 1.seconds)
-    assert( message.head == "GreatHelloWorld")
+    assert( message.head === "GreatHelloWorld")
 
   }
 
   it should "allow to process several request in a row" in new Helper {
 
-    val ep = actor( n("hello") )
+    val ep = actor( n("hello")~>n("world") )
 
+    //val start= System.currentTimeMillis()
     (1 to 1000).foreach(_ => ep ! "Test")
 
-    val messages = receiveN(1000, 7.seconds)
+    val messages = receiveN(1000, 3.seconds)
+    //println(System.currentTimeMillis() - start)
 
-    assert( messages.forall(_ == "TestHello"))
+    assert( messages.forall(_ == "TestHelloWorld"))
 
   }
 
