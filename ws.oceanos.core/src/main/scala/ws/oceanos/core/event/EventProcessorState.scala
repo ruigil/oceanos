@@ -65,6 +65,11 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
     log = event +: log
     //println(s"log[$event]")
     event match {
+      case Init(ref,message,_) =>
+        queues.values.foreach(_ clear())
+        initial.foreach(_ enqueue message)
+        if (hasNext) next()
+        else process(End(System.currentTimeMillis()))
       case Done(ref,message,_) =>
         if (services(ref).state == ServiceState.Running) {
           services(ref).state = ServiceState.Idle
@@ -73,47 +78,42 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
             .filter(_.cond.getOrElse((a:Any) => true)(message))
             .foreach(_.queue enqueue message)
         }
-        updateServiceState()
+        if (hasNext) next()
+        else process(End(System.currentTimeMillis()))
       case Start(ref,message,_) =>
         services(ref).state = ServiceState.Running
         ref.tell(Fire(message),context.self)
       case InMsg(ref,message,_) =>
+        val running = services.collect {
+          case (rRef,service) if service.state == ServiceState.Running => rRef
+        }
         running.foreach( a => a.tell(In(message),context.self) )
-      case Init(ref,message,_) =>
-        queues.values.foreach(_ clear())
-        initial.foreach(_ enqueue message)
-        updateServiceState()
       case End(_) =>
-        val result = terminal.collect{ case q: mutable.Queue[Any] if !q.isEmpty => q.front }
+        val result = terminal.flatMap(_ headOption)
         context.self ! Finished(if (result.size == 1) result.head else result)
     }
   }
 
-  private def running: List[ActorRef] =
-    services.collect{ case (ref,service) if service.state == ServiceState.Running =>  ref }.toList
-
   // start active services
-  private def next(): Unit = {
-    services.filter{ case(ref,service) => service.state == ServiceState.Active }
-      .foreach { case(ref,service) =>
-        val message = for (input <- service.inputs) yield input.queue.front
-        process(Start(ref, message, System.currentTimeMillis()))
-      }
-  }
 
   // have we reach an end state ?
   private def hasNext: Boolean = terminal.forall(_.isEmpty)
 
 
-  private def updateServiceState() {
+  private def next() {
+    // start active transitions
     // update service state, active, running, idle
-    services.foreach { case (_,service) =>
+    services.foreach { case (ref,service) =>
       val active = service.inputs.forall(_.queue.size > 0)
-      if (service.state == ServiceState.Idle && active) service.state = ServiceState.Active
+
+      if (service.state == ServiceState.Idle && active) {
+        service.state = ServiceState.Active
+        val message = service.inputs.map(_.queue.front)
+        process(Start(ref, message, System.currentTimeMillis()))
+      }
+
       if (service.state == ServiceState.Running && !active) service.state = ServiceState.Idle
     }
-    if (hasNext) next()
-    else process(End(System.currentTimeMillis()))
   }
 
   override def toString: String = log mkString "\n"

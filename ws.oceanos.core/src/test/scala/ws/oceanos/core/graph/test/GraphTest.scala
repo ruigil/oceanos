@@ -64,7 +64,33 @@ class GraphTest extends FlatSpec {
     assert(g2.nodes.size === 2)
     assert(g2.edges.size === 1)
   }
-  
+
+  it should "allow to remove nodes" in {
+    val graph = new TestGraph
+    val node1 = new TestNode
+    val node2 = new TestNode
+    val edge = new TestEdge(node1,node2)
+    val g2 = graph + edge
+    assert(g2.nodes.size === 2)
+    assert(g2.edges.size === 1)
+    val g3 = g2 - node1
+    assert(g3.nodes.size === 1)
+    assert(g3.edges.size === 0)
+  }
+
+  it should "allow to remove edges" in {
+    val graph = new TestGraph
+    val node1 = new TestNode
+    val node2 = new TestNode
+    val edge = new TestEdge(node1,node2)
+    val g2 = graph + edge
+    assert(g2.nodes.size === 2)
+    assert(g2.edges.size === 1)
+    val g3 = g2 - edge
+    assert(g3.nodes.size === 2)
+    assert(g3.edges.size === 0)
+  }
+
   it should "not have duplicate edges" in {
     val graph = new TestGraph
     val node1 = new TestNode

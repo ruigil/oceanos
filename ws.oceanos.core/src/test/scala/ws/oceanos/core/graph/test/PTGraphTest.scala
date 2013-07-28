@@ -76,5 +76,14 @@ class PTGraphTest extends FlatSpec with ShouldMatchers with FlowContext {
     assert(net.edges.size === 10)
   }
 
+  it should "allow the creation of non deterministic choices" in {
+    val flow1 = nop(0) ~> ndc() ~> nop(1) ~> nop(3)
+    val flow2 = nop(0) ~> ndc() ~> nop(2) ~> nop(3)
+    val net = PTGraph(FlowGraph(flow1,flow2))
+    assert(net.places.size === 4)
+    assert(net.transitions.size === 4)
+    assert(net.edges.size === 8)
+  }
+
 }
 

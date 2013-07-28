@@ -84,12 +84,11 @@ class EventProcessorTest(_system: ActorSystem)
 
   it should "allow to process several request in a row" in new Helper {
 
-
     val ep = actor( n("hello") )
 
     (1 to 1000).foreach(_ => ep ! "Test")
 
-    val messages = receiveN(1000, 4.seconds)
+    val messages = receiveN(1000, 7.seconds)
 
     assert( messages.forall(_ == "TestHello"))
 
@@ -155,8 +154,7 @@ class EventProcessorTest(_system: ActorSystem)
 
   }
 
-  it should "allow choreography with others" in new Helper {
-
+  it should "allow interleaving between event processors" in new Helper {
 
     val ep = actor(
       n("hello")~>outin~>n("beautiful")~>outin~>n("world")
@@ -174,6 +172,22 @@ class EventProcessorTest(_system: ActorSystem)
     val messages = receiveN(1, 3.seconds)
     assert( messages.size == 1)
     assert( messages.head == "TestHowHelloAreBeautifulYouWorld")
+
+
+  }
+
+  it should "allow non-deterministic choice" in new Helper {
+
+    val ep = actor(
+      n("hello")~>ndc()~>n("beautiful")~>n("world"),
+      n("hello")~>ndc()~>n("amazing")~>n("world")
+    )
+
+    ep ! "Test"
+    val messages = receiveN(1, 3.seconds)
+    assert( messages.size == 1)
+
+    assert( (messages.head == "TestHelloBeautifulWorld") || (messages.head == "TestHelloAmazingWorld"))
 
 
   }

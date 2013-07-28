@@ -26,6 +26,13 @@ trait Graph[N, E <: Edge[N], T <: Graph[N,E,T] ] {
       copy(nodes + edge.n1 + edge.n2, edge :: edges)
     } else copy(nodes, edges)
   }
+  def - (node: N): T = copy(nodes - node, edges.filter( e => !(e.n1 == node || e.n2 == node)))
+  def - (edge: E): T = {
+    if (edges.exists(e => e.n1 == edge.n1 && e.n2 == edge.n2)) {
+      val e = edges.filter(e => !(e.n1 == edge.n1 && e.n2 == edge.n2))
+      copy(nodes, e)
+    } else copy(nodes, edges)
+  }
   def successors(node: N) = edges.collect{ case e: Edge[N] if e.n1 == node => e.n2 }
   def predecessors(node: N) = edges.collect{ case e: Edge[N] if e.n2 == node => e.n1 }
   def neighbors(node: N) = successors(node) ::: predecessors(node)

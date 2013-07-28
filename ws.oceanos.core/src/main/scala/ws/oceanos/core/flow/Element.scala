@@ -23,6 +23,8 @@ trait Element extends Flow {
 
   def out: Element  = OutMarker(FlowRegistry.nextId("Out"))
 
+  def ndc(id: Int = 0): Element  = NonDetChoice("NonDetChoice"+id)
+
   def merge: Element  = ParallelSync(FlowRegistry.nextId("Init"))
 }
 
@@ -32,6 +34,8 @@ case class Condition(predicate: Any => Boolean) extends Element
 case class InMarker(id: String) extends Element
 
 case class OutMarker(id: String) extends Element
+
+case class NonDetChoice(id: String) extends Element
 
 
 // TODO: This should be configured wih a merge strategy

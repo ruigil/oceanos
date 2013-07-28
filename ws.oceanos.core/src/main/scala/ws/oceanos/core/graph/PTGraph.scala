@@ -70,6 +70,7 @@ object PTGraph {
 
     net.
       map(createPT(_,flowGraph)).
+      map(modifyNDC(_,flowGraph)).
       map(defineOutputs(_,flowGraph))
 
   }
@@ -86,6 +87,25 @@ object PTGraph {
       if (out contains service) {
         n + inputEdge + PTEdge( Transition(service), Place(service.id, O) )
       } else n + inputEdge
+    }
+  }
+
+  private def modifyNDC(net: PTGraph, flowGraph: FlowGraph) = {
+    flowGraph.edges.foldLeft(net) { (n,e) => e match {
+      case FlowEdge(source: NonDetChoice, target: Service) =>
+        val targets = flowGraph.successors(source) collect {case s: Service => s}
+        val place = Place(source.id, N)
+        val removeOld = targets.foldLeft(n) { (n,target) =>
+          val oldPlace = serviceMap(target).from
+          n - oldPlace
+        }
+        targets.foldLeft(removeOld) { (n,target) =>
+          val newInput = PTEdge(place, serviceMap(target).to)
+          serviceMap(target) = newInput
+          n + newInput
+        }
+      case _ => n
+      }
     }
   }
 
@@ -110,6 +130,8 @@ object PTGraph {
               }
               else n + PTEdge(serviceMap(source).to, serviceMap(target).from)
           }
+        case FlowEdge(source: Service, ndc: NonDetChoice) =>
+          n + PTEdge(serviceMap(source).to, Place(ndc.id,N))
 
         case _ => n
       }

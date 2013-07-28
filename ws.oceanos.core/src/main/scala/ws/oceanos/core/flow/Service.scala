@@ -34,6 +34,7 @@ trait Service extends Flow  {
 
 case class SimpleService(serviceProps: Props, override val id: String) extends Service {
   override val properties = Props(new ProxyActor(serviceProps))
+  override def toString = id
 }
 
 class ComplexService(flows: Seq[Flow]) extends Service {
