@@ -116,7 +116,7 @@ class EventProcessorTest(_system: ActorSystem)
     ep ! "Test"
 
     val message = receiveN(1, 1.seconds)
-    assert( message.head == "TestHelloMapWorld")
+    assert( message.head === "TestHelloMapWorld")
   }
 
 

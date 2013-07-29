@@ -16,17 +16,16 @@
 package ws.oceanos.core.event
 
 import akka.actor.Actor
-import ws.oceanos.core.event.EventProcessorState.{Out, In, Fire}
+import ws.oceanos.core.event.EventProcessorState.{ReplyMsg, Out, In, RequestMsg}
 import scala.util.Success
 
 class OutInActor extends Actor  {
 
   def receive: Receive = {
-    case Fire(messages) =>
-      context.parent ! (if (messages.size == 1) Out(messages.head) else Out(messages))
+    case RequestMsg(message) =>
+      context.parent ! Out(message)
     case In(messages) =>
-      val requester = sender
-      requester ! Success(messages)
+      context.parent ! ReplyMsg(messages)
   }
 
 }

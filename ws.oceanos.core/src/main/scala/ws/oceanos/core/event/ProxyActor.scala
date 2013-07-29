@@ -18,8 +18,6 @@ package ws.oceanos.core.event
 import akka.actor.Actor
 import akka.actor.Props
 import akka.actor.ActorLogging
-import akka.pattern.ask
-import akka.util.Timeout
 import scala.concurrent.duration._
 import akka.actor.SupervisorStrategy._
 import akka.actor.AllForOneStrategy
@@ -29,36 +27,24 @@ class ProxyActor(serviceProps: Props) extends Actor with ActorLogging {
   import context._
   import EventProcessorState._
 
-  implicit val timeout = Timeout(5 seconds)
   val service = context.actorOf(serviceProps)
 
-  var count = 0
+  def receive = request
 
-  def receive = accept
-
-  def accept: Receive = {
-    case Fire(messages) =>
-      val future = service ? (if (messages.length==1) messages.head else messages)
-      val requester = sender
-      future onComplete { result =>
-        //become(accept)
-        requester ! result
-      }
-      //become(running(future))
-    case m => log.info(s"message [$m] not recognized")
+  def request: Receive = {
+    case RequestMsg(message) =>
+      service ! message
+      become(reply)
   }
-
-  /* something is wrong with this. for some reason it deadlocks.
-  def running(future: Future[Any]): Receive = {
-    case Cancel =>
-      future.failed
-      become(accept)
+  def reply: Receive = {
+    case message =>
+      parent ! ReplyMsg(message)
+      become(request)
   }
-  */
 
   override val supervisorStrategy = AllForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 10.seconds) {
-    case _: IllegalStateException => Resume
-    case _: IllegalArgumentException => Stop
+    //case _: IllegalStateException => Resume
+    //case _: IllegalArgumentException => Stop
     case _: Exception => Escalate
   }
 

@@ -30,57 +30,42 @@ class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLog
 
   val epState = new EventProcessorState(graph,context)
 
-  def receive = accept
+  def receive = init
 
-  // TODO: This mechanics assumes request-reply. What about request only?
-  def accept: Receive = {
+
+  def init: Receive = {
     case message =>
-      val client = sender
-      become(request(client))
-      epState.process(Init(client,message, System.currentTimeMillis()))
+      epState.process(Init(sender,message))
+      become(running(sender))
   }
   
-  def request(client: ActorRef): Receive = {
-    running(client) orElse {
-      case Out(message) =>
-        client ! message
-        unstashAll()
-        become(waitForIn(client))
-
-      case _ => stash()
-    }
-  }
-
-  def waitForIn(client: ActorRef): Receive = {
-    running(client) orElse {
-      case message =>
-        // TODO: What does it mean to being processing parallell stuf for a client
-        // and then change clients with another 'in' message?
-        // clients refs are not absolute because they can come from transient futures
-        val anotherClient = sender
-        epState.process(InMsg(anotherClient,message, System.currentTimeMillis()))
-        become(request(anotherClient))
-    }
-  }
-
   def running(client: ActorRef): Receive = {
-    case Success(message) =>
-      epState.process( Done(sender,message, System.currentTimeMillis()))
-    case Failure(message) =>
-      // TODO: Failure should be handled differently
-      client ! message
-      become(accept)
-      unstashAll()
+    case ReplyMsg(message) =>
+      epState.process( Reply(sender,message ) )
     case Finished(message) =>
       client ! message
-      become(accept)
+      become(init)
       unstashAll()
+    case Out(message) =>
+      client ! message
+      unstashAll()
+      become(paused(client))
+
+     case _ => stash()
+  }
+
+  def paused(client: ActorRef): Receive = {
+    case ReplyMsg(message) =>
+      epState.process( Reply(sender,message ) )
+
+    case message =>
+      epState.process( Resume(sender,message) )
+      become(running(sender))
   }
 
 
   override val supervisorStrategy = OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 10.seconds) {
-    case _: IllegalStateException => Resume
-    case _: IllegalArgumentException => Stop
+    //case _: IllegalArgumentException => Stop
     case _: Exception => Escalate
   }
  

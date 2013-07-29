@@ -20,17 +20,18 @@ import ws.oceanos.core.graph.{PTEdge, Place, PTGraph}
 import collection._
 
 object EventProcessorState {
-  case class Fire(messages: List[Any])
+  case class RequestMsg(messages: Any)
+  case class ReplyMsg(messages: Any)
   case class Finished(messages: Any)
   case class In(messages: Any)
   case class Out(messages: Any)
 
-  class Event(name: String, time: Long)
-  case class Init(service: ActorRef, message: Any, time: Long) extends Event("Init",time)
-  case class Done(service: ActorRef, message: Any, time: Long) extends Event("Done",time)
-  case class Start(service: ActorRef, message:List[Any], time: Long) extends Event("Start",time)
-  case class InMsg(service: ActorRef, message:Any, time: Long) extends Event("In",time)
-  case class End(time: Long) extends Event("Stop",time)
+  class Event(name: String, time: Long = System.currentTimeMillis())
+  case class Init(service: ActorRef, message: Any) extends Event("Init")
+  case class Reply(service: ActorRef, message: Any) extends Event("Reply")
+  case class Request(service: ActorRef, message: Any) extends Event("Request")
+  case class Resume(service: ActorRef, message: Any) extends Event("Resume")
+  case class Stop(service: ActorRef, message: Any) extends Event("Stop")
 
   object ServiceState extends Enumeration {
     val Idle, Running, Active = Value
@@ -65,12 +66,12 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
     log = event +: log
     //println(s"log[$event]")
     event match {
-      case Init(ref,message,_) =>
+      case Init(ref,message) =>
         queues.values.foreach(_ clear())
         initial.foreach(_ enqueue message)
         if (hasNext) next()
-        else process(End(System.currentTimeMillis()))
-      case Done(ref,message,_) =>
+        else process(Stop(ref,message))
+      case Reply(ref,message) =>
         if (services(ref).state == ServiceState.Running) {
           services(ref).state = ServiceState.Idle
           services(ref).inputs.foreach(_.queue.dequeue())
@@ -79,16 +80,16 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
             .foreach(_.queue enqueue message)
         }
         if (hasNext) next()
-        else process(End(System.currentTimeMillis()))
-      case Start(ref,message,_) =>
+        else process(Stop(ref,message))
+      case Request(ref,message) =>
         services(ref).state = ServiceState.Running
-        ref.tell(Fire(message),context.self)
-      case InMsg(ref,message,_) =>
+        ref.tell(RequestMsg(message),context.self)
+      case Resume(ref,message) =>
         val running = services.collect {
           case (rRef,service) if service.state == ServiceState.Running => rRef
         }
         running.foreach( a => a.tell(In(message),context.self) )
-      case End(_) =>
+      case Stop(ref,message) =>
         val result = terminal.flatMap(_ headOption)
         context.self ! Finished(if (result.size == 1) result.head else result)
     }
@@ -109,7 +110,8 @@ class EventProcessorState(graph:PTGraph, context: ActorContext) {
       if (service.state == ServiceState.Idle && active) {
         service.state = ServiceState.Active
         val message = service.inputs.map(_.queue.front)
-        process(Start(ref, message, System.currentTimeMillis()))
+
+        process(Request(ref, if (message.size==1) message.head else message) )
       }
 
       if (service.state == ServiceState.Running && !active) service.state = ServiceState.Idle
