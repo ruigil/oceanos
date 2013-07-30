@@ -25,7 +25,7 @@ import akka.actor.AllForOneStrategy
 
 class ProxyActor(serviceProps: Props) extends Actor with ActorLogging {
   import context._
-  import EventProcessorState._
+  import EventProcessorActor._
 
   val service = context.actorOf(serviceProps)
 

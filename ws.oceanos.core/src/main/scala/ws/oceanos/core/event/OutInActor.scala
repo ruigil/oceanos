@@ -16,7 +16,7 @@
 package ws.oceanos.core.event
 
 import akka.actor.Actor
-import ws.oceanos.core.event.EventProcessorState.{ReplyMsg, Out, In, RequestMsg}
+import ws.oceanos.core.event.EventProcessorActor.{ReplyMsg, Out, In, RequestMsg}
 import scala.util.Success
 
 class OutInActor extends Actor  {

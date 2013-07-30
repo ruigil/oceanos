@@ -16,7 +16,7 @@
 package ws.oceanos.core.event
 
 import akka.actor.Actor
-import ws.oceanos.core.event.EventProcessorState.{ReplyMsg, RequestMsg}
+import ws.oceanos.core.event.EventProcessorActor.{ReplyMsg, RequestMsg}
 
 class TransformActor(function: Any => Any) extends Actor  {
 

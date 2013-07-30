@@ -59,7 +59,7 @@ class EventProcessorTest(_system: ActorSystem)
       system.actorOf(flow(flows: _*))
     }
   }
-
+    /*
   "Event Processor" should "reply to requests" in new Helper {
 
     val ep = actor( n("world") )
@@ -81,21 +81,24 @@ class EventProcessorTest(_system: ActorSystem)
     assert( message.head === "GreatHelloWorld")
 
   }
+  */
 
-  it should "allow to process several request in a row" in new Helper {
+  "Event Processor" should "allow to process several request in a row" in new Helper {
 
     val ep = actor( n("hello")~>n("world") )
 
-    //val start= System.currentTimeMillis()
-    (1 to 1000).foreach(_ => ep ! "Test")
+    Thread.sleep(100)
 
-    val messages = receiveN(1000, 3.seconds)
-    //println(System.currentTimeMillis() - start)
+    val start = System.currentTimeMillis()
+    (1 to 5000).foreach(_ => ep ! "Test")
+
+    val messages = receiveN(5000, 10.seconds)
+    println(System.currentTimeMillis() - start)
 
     assert( messages.forall(_ == "TestHelloWorld"))
 
   }
-
+                   /*
   it should "allow to create conditional branches" in new Helper {
 
     val ep = actor(
@@ -193,5 +196,6 @@ class EventProcessorTest(_system: ActorSystem)
 
 
   }
+  */
 
 }
