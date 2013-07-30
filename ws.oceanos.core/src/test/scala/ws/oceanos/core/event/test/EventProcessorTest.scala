@@ -22,7 +22,6 @@ import org.scalatest.matchers.ShouldMatchers
 import ws.oceanos.core.flow._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
-import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
 
 
@@ -35,18 +34,11 @@ class EventProcessorTest(_system: ActorSystem)
   with BeforeAndAfterAll
   with FlowContext {
 
-  def this() = this(ActorSystem("EventProcessorTest",
-    ConfigFactory.parseString(
-      """
-        | os-event-processor-mailbox {
-        |    mailbox-type = "akka.dispatch.UnboundedDequeBasedMailbox"
-        |  }
-      """.stripMargin)))
+  def this() = this(ActorSystem("EventProcessorTest"))
 
   //override def beforeAll() = { println(system.settings)}
 
   override def afterAll() = { system.shutdown() }
-
 
   class Helper {
 
@@ -59,7 +51,6 @@ class EventProcessorTest(_system: ActorSystem)
       system.actorOf(flow(flows: _*))
     }
   }
-    /*
   "Event Processor" should "reply to requests" in new Helper {
 
     val ep = actor( n("world") )
@@ -81,24 +72,23 @@ class EventProcessorTest(_system: ActorSystem)
     assert( message.head === "GreatHelloWorld")
 
   }
-  */
 
-  "Event Processor" should "allow to process several request in a row" in new Helper {
+  it should "allow to process several request in a row" in new Helper {
 
     val ep = actor( n("hello")~>n("world") )
 
     Thread.sleep(100)
 
-    val start = System.currentTimeMillis()
-    (1 to 5000).foreach(_ => ep ! "Test")
+    //val start = System.currentTimeMillis()
+    (1 to 1000).foreach(_ => ep ! "Test")
 
-    val messages = receiveN(5000, 10.seconds)
-    println(System.currentTimeMillis() - start)
+    val messages = receiveN(1000, 3.seconds)
+    //println(System.currentTimeMillis() - start)
 
     assert( messages.forall(_ == "TestHelloWorld"))
 
   }
-                   /*
+
   it should "allow to create conditional branches" in new Helper {
 
     val ep = actor(
@@ -196,6 +186,5 @@ class EventProcessorTest(_system: ActorSystem)
 
 
   }
-  */
 
 }

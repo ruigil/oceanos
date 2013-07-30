@@ -39,7 +39,6 @@ case class SimpleService(serviceProps: Props, override val id: String) extends S
 
 class ComplexService(flows: Seq[Flow]) extends Service {
   override val properties = Props(new EventProcessorActor(PTGraph(FlowGraph(flows:_*))))
-    .withMailbox("os-event-processor-mailbox")
   override val id = FlowRegistry.nextId("Flow")
 }
 

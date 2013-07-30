@@ -19,23 +19,24 @@ import akka.actor._
 import scala.concurrent.duration._
 import akka.actor.SupervisorStrategy._
 import ws.oceanos.core.graph.{Place, PTEdge, PTGraph}
-import scala.util.Success
-import scala.util.Failure
 import akka.actor.OneForOneStrategy
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 object EventProcessorActor {
   case class RequestMsg(messages: Any)
   case class ReplyMsg(messages: Any)
+  case class Finish(message: Any)
   case class In(messages: Any)
   case class Out(messages: Any)
+  case class Work(message: Any, ref: ActorRef)
 
-  sealed class Event(name: String, time: Long = System.currentTimeMillis())
-  case class Init(service: ActorRef, message: Any) extends Event("Init")
-  case class Reply(service: ActorRef, message: Any) extends Event("Reply")
-  case class Request(service: ActorRef, message: Any) extends Event("Request")
-  case class Resume(service: ActorRef, message: Any) extends Event("Resume")
-  case class Stop(service: ActorRef, message: Any) extends Event("Stop")
+  sealed abstract class Event(name: String = "Event", time: Long = System.currentTimeMillis())
+  case class Init(service: ActorRef, message: Any) extends Event(name = "Init")
+  case class Reply(service: ActorRef, message: Any) extends Event(name = "Reply")
+  case class Request(service: ActorRef, message: Any) extends Event(name = "Request")
+  case class Resume(service: ActorRef, message: Any) extends Event(name = "Resume")
+  case class Stop(service: ActorRef, message: Any) extends Event(name = "Stop")
 
   object ServiceState extends Enumeration {
     val Idle, Running = Value
@@ -47,13 +48,12 @@ object EventProcessorActor {
 }
 
 
-class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLogging {
+class EventProcessorActor(graph: PTGraph) extends Actor with ActorLogging {
   import context._
   import EventProcessorActor._
 
-  var eventlog: List[Event] = Nil
-  var client: ActorRef = Actor.noSender
-
+  val logQueue = ListBuffer[Event]()
+  val workQueue = mutable.Queue.empty[Any]
 
   val queues = graph.places.map( p => (p,mutable.Queue.empty[Any])).toMap
   val initial = graph.initial.map(p => queues(p))
@@ -62,8 +62,12 @@ class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLog
   val services = (for {
     transition <- graph.transitions
     ref = context.actorOf(transition.service.properties,transition.service.id)
-    inputs = for (PTEdge(place:Place,_,cond) <- graph.inputsOf(transition)) yield new Input(cond,queues(place))
-    outputs = for (PTEdge(_,place:Place,cond) <- graph.outputsOf(transition)) yield new Output(cond,queues(place))
+    inputs = for (PTEdge(place:Place,_,cond) <- graph.inputsOf(transition))
+             yield new Input(cond,queues(place))
+
+    outputs = for (PTEdge(_,place:Place,cond) <- graph.outputsOf(transition))
+              yield new Output(cond,queues(place))
+
   } yield (ref,new Service(ServiceState.Idle,inputs,outputs))).toMap
 
 
@@ -72,7 +76,6 @@ class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLog
 
   def init: Receive = {
     case message =>
-      client = sender
       process(Init(sender,message))
       become(running(sender))
   }
@@ -82,18 +85,23 @@ class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLog
       process( Reply(sender,message ) )
     case Out(message) =>
       client ! message
-      unstashAll()
-      become(paused(client))
+      become(paused)
+    case Finish(message) =>
+      client ! message
+      if (workQueue.size > 0) {
+        become(init)
+        val Work(msg,ref) = workQueue.dequeue()
+        self.tell(msg,ref)
+      }
 
-     case _ => stash()
+     case msg => workQueue.enqueue(Work(msg,sender))
   }
 
-  def paused(clien: ActorRef): Receive = {
+  def paused: Receive = {
     case ReplyMsg(message) =>
       process( Reply(sender,message ) )
 
     case message =>
-      client = sender
       process( Resume(sender,message) )
       become(running(sender))
   }
@@ -107,7 +115,7 @@ class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLog
 
   private def process(event: Event): Unit = {
 
-    eventlog = event +: eventlog
+    logQueue += event
     //log.info(s"log[$event]")
     event match {
       case Init(ref,message) =>
@@ -134,11 +142,8 @@ class EventProcessorActor(graph: PTGraph) extends Actor with Stash with ActorLog
         running.foreach( a => a.tell(In(message),context.self) )
       case Stop(ref,message) =>
         val result = terminal.flatMap(_ headOption)
-        //log.info("client"+client)
-        client.tell(if (result.size == 1) result.head else result,context.self)
+        self ! Finish(if (result.size == 1) result.head else result)
         terminal.foreach(_ clear())
-        unstashAll()
-        become(init)
     }
   }
 
